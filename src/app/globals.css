@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: #0b0b0d;
+  color: #f4f4f5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide number input spinners for a cleaner set-entry table */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a30;
+  border-radius: 999px;
+}
+
+@layer components {
+  .app-container {
+    @apply mx-auto w-full max-w-2xl px-4;
+  }
+
+  .card {
+    @apply rounded-2xl border border-border bg-surface shadow-card;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 font-semibold text-black transition active:scale-[0.98] hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface2 px-4 py-3 font-semibold text-white transition active:scale-[0.98] hover:border-accent/40 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 font-medium text-muted transition hover:bg-surface2 hover:text-white;
+  }
+
+  .field-input {
+    @apply w-full rounded-xl border border-border bg-surface2 px-4 py-3 text-white placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-muted;
+  }
+
+  .field-error {
+    @apply mt-1 text-sm text-red-400;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full bg-accent-muted px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-accent;
+  }
+}
