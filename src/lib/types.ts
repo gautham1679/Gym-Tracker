@@ -32,3 +32,17 @@ export type Workout = {
 /** Raw shape as it comes back from Supabase before we nest/sort it client-side. */
 export type WorkoutRow = Omit<Workout, "exercises">;
 export type ExerciseRow = Omit<Exercise, "sets">;
+
+/**
+ * A user's saved exercise list for a category (e.g. everything they've ever
+ * logged under "Chest"). Used to auto-fill a new day's workout. Independent
+ * of any specific day's logged history — deleting one doesn't touch past data.
+ */
+export type ExerciseTemplate = {
+  id: string;
+  user_id: string;
+  category: string;
+  name: string;
+  position: number;
+  created_at: string;
+};

@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import type { Workout } from "@/lib/types";
+import type { Exercise, Workout } from "@/lib/types";
 import WorkoutCard from "./WorkoutCard";
 import CategoryPickerModal from "./CategoryPickerModal";
+import ManageExercisesModal from "./ManageExercisesModal";
 
 export default function TodayClient({
   userId,
@@ -19,6 +20,7 @@ export default function TodayClient({
   const supabase = createClient();
   const [workouts, setWorkouts] = useState<Workout[]>(initialWorkouts);
   const [showPicker, setShowPicker] = useState(false);
+  const [manageCategory, setManageCategory] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function updateWorkout(id: string, updater: (w: Workout) => Workout) {
@@ -39,7 +41,33 @@ export default function TodayClient({
       return;
     }
 
-    setWorkouts((prev) => [{ ...data, exercises: [] }, ...prev]);
+    // Pre-fill exercises from this category's saved list, if there is one.
+    let exercises: Exercise[] = [];
+    const { data: templates } = await supabase
+      .from("exercise_templates")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("category", category)
+      .order("created_at", { ascending: true });
+
+    if (templates && templates.length > 0) {
+      const { data: newExercises } = await supabase
+        .from("exercises")
+        .insert(
+          templates.map((t, i) => ({
+            workout_id: data.id,
+            name: t.name,
+            position: i,
+          }))
+        )
+        .select();
+
+      if (newExercises) {
+        exercises = newExercises.map((e) => ({ ...e, sets: [] }));
+      }
+    }
+
+    setWorkouts((prev) => [{ ...data, exercises }, ...prev]);
   }
 
   async function handleAddExercise(workoutId: string, name: string) {
@@ -58,6 +86,17 @@ export default function TodayClient({
       ...w,
       exercises: [...w.exercises, { ...data, sets: [] }],
     }));
+
+    // Remember this exercise for the category going forward. If it's
+    // already saved, this is a no-op (unique constraint + ignoreDuplicates).
+    if (workout) {
+      await supabase
+        .from("exercise_templates")
+        .upsert(
+          { user_id: userId, category: workout.category, name },
+          { onConflict: "user_id,category,name", ignoreDuplicates: true }
+        );
+    }
   }
 
   async function handleAddSet(
@@ -112,7 +151,6 @@ export default function TodayClient({
       .eq("id", setId);
 
     if (dbError) {
-      // revert on failure
       updateWorkout(workoutId, (w) => ({
         ...w,
         exercises: w.exercises.map((e) =>
@@ -212,6 +250,7 @@ export default function TodayClient({
             onDeleteExercise={(exerciseId) => handleDeleteExercise(workout.id, exerciseId)}
             onToggleComplete={() => handleToggleComplete(workout.id)}
             onDeleteWorkout={() => handleDeleteWorkout(workout.id)}
+            onManageExercises={() => setManageCategory(workout.category)}
           />
         ))}
 
@@ -227,6 +266,14 @@ export default function TodayClient({
         <CategoryPickerModal
           onSelect={handleCreateWorkout}
           onClose={() => setShowPicker(false)}
+        />
+      )}
+
+      {manageCategory && (
+        <ManageExercisesModal
+          userId={userId}
+          category={manageCategory}
+          onClose={() => setManageCategory(null)}
         />
       )}
     </div>

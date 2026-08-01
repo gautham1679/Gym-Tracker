@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { CheckCircle2, ChevronDown, Loader2, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, Loader2, Plus, Settings2, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import type { Workout } from "@/lib/types";
 import { categoryLabel } from "@/lib/categories";
@@ -22,6 +22,7 @@ type Props = {
   onDeleteExercise: (exerciseId: string) => Promise<void> | void;
   onToggleComplete: () => Promise<void> | void;
   onDeleteWorkout: () => Promise<void> | void;
+  onManageExercises: () => void;
 };
 
 export default function WorkoutCard({
@@ -34,6 +35,7 @@ export default function WorkoutCard({
   onDeleteExercise,
   onToggleComplete,
   onDeleteWorkout,
+  onManageExercises,
 }: Props) {
   const [expanded, setExpanded] = useState(true);
   const [showAddExercise, setShowAddExercise] = useState(false);
@@ -65,12 +67,29 @@ export default function WorkoutCard({
 
   return (
     <div className="card overflow-hidden">
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") setExpanded((v) => !v);
+        }}
+        className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-4 text-left"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <span className="badge">{categoryLabel(workout.category)}</span>
+          {editable && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onManageExercises();
+              }}
+              className="rounded-lg p-1.5 text-muted hover:bg-surface2 hover:text-accent"
+              aria-label={`Manage ${categoryLabel(workout.category)} exercise list`}
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+            </button>
+          )}
           {workout.is_completed && (
             <span className="flex items-center gap-1 text-xs font-medium text-emerald-400">
               <CheckCircle2 className="h-3.5 w-3.5" /> Completed
@@ -86,7 +105,7 @@ export default function WorkoutCard({
             className={clsx("h-4 w-4 transition-transform", expanded && "rotate-180")}
           />
         </div>
-      </button>
+      </div>
 
       {expanded && (
         <div>
