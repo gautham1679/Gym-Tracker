@@ -57,10 +57,19 @@ export default function ExerciseTable({
     }
   }
 
+  const volume = exercise.sets.reduce((sum, s) => sum + s.reps * s.weight_kg, 0);
+
   return (
     <div className="border-t border-border first:border-t-0">
       <div className="flex items-center justify-between px-4 pb-2 pt-4">
-        <h3 className="font-semibold text-white">{exercise.name}</h3>
+        <div>
+          <h3 className="font-semibold text-white">{exercise.name}</h3>
+          {exercise.sets.length > 0 && (
+            <p className="text-xs text-muted">
+              {volume.toLocaleString()} kg volume
+            </p>
+          )}
+        </div>
         {editable && (
           <button
             onClick={() => onDeleteExercise()}

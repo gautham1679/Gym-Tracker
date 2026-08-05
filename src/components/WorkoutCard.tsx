@@ -64,6 +64,10 @@ export default function WorkoutCard({
   }
 
   const totalSets = workout.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+  const totalVolume = workout.exercises.reduce(
+    (sum, ex) => sum + ex.sets.reduce((s, set) => s + set.reps * set.weight_kg, 0),
+    0
+  );
 
   return (
     <div className="card overflow-hidden">
@@ -97,9 +101,15 @@ export default function WorkoutCard({
           )}
         </div>
         <div className="flex items-center gap-2 text-sm text-muted">
-          <span>
+          <span className="text-right">
             {workout.exercises.length} exercise{workout.exercises.length === 1 ? "" : "s"} ·{" "}
             {totalSets} set{totalSets === 1 ? "" : "s"}
+            {totalVolume > 0 && (
+              <>
+                <br />
+                <span className="text-xs">{totalVolume.toLocaleString()} kg total volume</span>
+              </>
+            )}
           </span>
           <ChevronDown
             className={clsx("h-4 w-4 transition-transform", expanded && "rotate-180")}
